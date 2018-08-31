@@ -1,0 +1,9 @@
+{
+  "name": "ablecoin",
+  "version": "1.0.0",
+  "description": "Able coin, the most awesome coin made in Node & React",
+  "main": "src/server.js",
+  "author": "Seopftware",
+  "license": "MIT",
+  "private": false
+}
