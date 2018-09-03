@@ -5,7 +5,9 @@ const express = require("express"),
 
 const { getBlockchain, createNewBlock } = Blockchain;
 
-const PORT = 3003;
+// environment varialbe call PORT if doesn't find it => 3000
+// typing 'export HTTP_PORT=4000' in your console
+const PORT = process.env.HTTP_PORT || 3003;
 
 const app = express();
 app.use(bodyParser.json());
