@@ -29,6 +29,7 @@ let blockchain = [genesisBlock];
 // functional programming
 const getLastBlock = () => blockchain[blockchain.length -1];
 const getTimestamp = () => new Date().getTime() / 1000;
+const getBlockchain = () => blockchain;
 const createHash = (index, previousHash, timestamp, data) =>
     CryptoJS.SHA256(index + previousHash + timestamp + JSON.stringify(data)).toString;
 
@@ -38,7 +39,7 @@ const createHash = (index, previousHash, timestamp, data) =>
  * }
  **/
 
- const createBlock = data => {
+ const createNewBlock = data => {
     const previousBlock = getLastBlock();
     const newBlockIndex = previousBlock.index + 1; // index
     const newTimestamp = getTimestamp();
@@ -50,6 +51,7 @@ const createHash = (index, previousHash, timestamp, data) =>
         newTimestamp,
         data
     );
+    addBlockToChain(newBlock);
     return newBlock;
 };
 
@@ -112,7 +114,7 @@ const isChainValid = candidateChain => {
 
 const replacChain = candidateBlock => {
     // blockchain want more longer chain
-    if(isChainValid(candidateBlock) && candidateBlock.length > blockchain.length){
+    if(isChainValid(candidateBlock) && candidateBlock.length > getBlockchain().length){
         blockchain = candidateBlock;
         return true;
     } else{
@@ -122,9 +124,14 @@ const replacChain = candidateBlock => {
 
 const addBlockToChain = candidateBlock => {
     if(isNewBlockValid(candidateBlock, getLastBlock())){
-        blockchain.push(candidateBlock);
+        getBlockchain().push(candidateBlock);
         return true;
     }else{
         return false;
     }
+}
+
+module.exports={
+    getBlockchain,
+    createNewBlock
 }
