@@ -31,7 +31,7 @@ const getLastBlock = () => blockchain[blockchain.length -1];
 const getTimestamp = () => new Date().getTime() / 1000;
 const getBlockchain = () => blockchain;
 const createHash = (index, previousHash, timestamp, data) =>
-    CryptoJS.SHA256(index + previousHash + timestamp + JSON.stringify(data)).toString;
+    CryptoJS.SHA256(index + previousHash + timestamp + JSON.stringify(data)).toString();
 
 /**
  * function getLastBlock() {
@@ -43,7 +43,12 @@ const createHash = (index, previousHash, timestamp, data) =>
     const previousBlock = getLastBlock();
     const newBlockIndex = previousBlock.index + 1; // index
     const newTimestamp = getTimestamp();
-    const newHash = createHash(newBlockIndex, previousBlock, newTimestamp, data);
+    const newHash = createHash(
+        newBlockIndex, 
+        previousBlock.hash, 
+        newTimestamp, 
+        data
+    );
     const newBlock = new Block(
         newBlockIndex,
         newHash,
@@ -64,11 +69,11 @@ const isNewBlockValid = (candidateBlock, latestBlock) => { // invallid new block
         return false;
     }    
     else if(latestBlock.index +1 !==candidateBlock.index){ // index
-        conolse.log("The candidate block doestn't have a valid index")
+        conolse.log("The candidate block doestn't have a valid index");
         return false;
     }
-    else if(latestBlock.hash !== candidateBlock.previousBlock){ // block hash
-        console.log("The previous hash of the candidate block is not the hash of the latest block")
+    else if(latestBlock.hash !== candidateBlock.previousHash){ // block hash
+        console.log("The previous hash of the candidate block is not the hash of the latest block");
         return false;
     }
     else if(getBlockHash(candidateBlock) !== candidateBlock.hash){ // hash check again 
@@ -86,7 +91,7 @@ const isNewStructureValid = block => {
         && typeof block.hash === 'string'  
         && typeof block.previousHash === 'string'
         && typeof block.timestamp === 'number'
-        && typeof block.data === 'data'
+        && typeof block.data === 'string'
     )
 }
 
@@ -103,19 +108,18 @@ const isChainValid = candidateChain => {
 
     // i is start 1, because we don't need to check genesisblock (genesis block doesn't have a previous block)
     for(let i=1; i<candidateChain.length; i++){ 
-
         // candidate block(new block) , latest block(previous block)
-        if(!isNewBlockValid(candidateChain[i], candidateChain[i-1])){
+        if(!isNewBlockValid(candidateChain[i], candidateChain[i - 1])){
             return false;
         }
     }
     return true;
 }
 
-const replacChain = candidateBlock => {
+const replaceChain = candidateBlock => {
     // blockchain want more longer chain
     if(isChainValid(candidateBlock) && candidateBlock.length > getBlockchain().length){
-        blockchain = candidateBlock;
+        blockchain = candidateChain;
         return true;
     } else{
         return false;
@@ -129,7 +133,7 @@ const addBlockToChain = candidateBlock => {
     }else{
         return false;
     }
-}
+};
 
 module.exports={
     getBlockchain,

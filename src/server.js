@@ -1,14 +1,24 @@
 const express = require("express"),
-    bodyParser = require("body-parser"),
-    morgan = require("morgan"),
-    Blockchain = require("./blockchain.js");
+  bodyParser = require("body-parser"),
+  morgan = require("morgan"),
+  Blockchain = require("./blockchain");
 
-const {getBlockChain, createNewBlock} = Blockchain;
+const { getBlockchain, createNewBlock } = Blockchain;
 
-const PORT = 3000;
+const PORT = 3003;
+
 const app = express();
-
 app.use(bodyParser.json());
 app.use(morgan("combined"));
 
-app.listen(PORT, () => console.log(’Able Coin Server running on ${PORT}’));
+app.get("/blocks", (req, res) => {
+  res.send(getBlockchain());
+});
+
+app.post("/blocks", (req, res) => {
+  const { body: { data } } = req;
+  const newBlock = createNewBlock(data);
+  res.send(newBlock);
+});
+
+app.listen(PORT, () => console.log(`Nomadcoin Server running on ${PORT} ✅`));
