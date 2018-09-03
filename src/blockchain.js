@@ -109,3 +109,22 @@ const isChainValid = candidateChain => {
     }
     return true;
 }
+
+const replacChain = candidateBlock => {
+    // blockchain want more longer chain
+    if(isChainValid(candidateBlock) && candidateBlock.length > blockchain.length){
+        blockchain = candidateBlock;
+        return true;
+    } else{
+        return false;
+    }
+};
+
+const addBlockToChain = candidateBlock => {
+    if(isNewBlockValid(candidateBlock, getLastBlock())){
+        blockchain.push(candidateBlock);
+        return true;
+    }else{
+        return false;
+    }
+}
