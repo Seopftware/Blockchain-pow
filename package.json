@@ -5,5 +5,9 @@
   "main": "src/server.js",
   "author": "Seopftware",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "node": "^10.9.0"
+  }
 }
