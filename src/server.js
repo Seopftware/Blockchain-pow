@@ -25,6 +25,13 @@ app.post("/blocks", (req, res) => {
   res.send(newBlock);
 });
 
+app.post("/peers", (req, res) => {
+  // get peer in body data
+  const { body: { peer } } = req; // url which is running ws server
+  connectToPeers(peer); // connect To peer
+
+  res.send(); // kill the connection
+});
 // we need to give to the p2p server the express server
 const server = app.listen(PORT, () => 
 console.log(`TripCoin Server running on ${PORT} ✅`));
