@@ -6,19 +6,24 @@ const getSockets = () => sockets;
 
 
 const startP2PServer = server => {
-    
     const wsServer = new WebSockets.Server({ server });
-    
-    // when server connecting throguh ws
-    wsServer.on("connection", ws => {
-        
+    wsServer.on("connection", ws => { // when server connecting throguh ws        
     console.log(`Hello Socket`);
+    initSocketConnection(ws)
     });
     console.log("TripCoin P2P Server Running!")
 };
 
+// work when new socket gets connect
 const initSocketConnection = socket => {
     sockets.push(socket);
+    socket.on("message", (data) =>{
+        console.log(data);
+    });
+    // function to send message
+    setTimeout(() => {
+        socket.send("welcome!")
+    }, 5000);
 };
 
 // this function take new url where url socket server is running
