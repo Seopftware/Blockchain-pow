@@ -1,8 +1,8 @@
 const WebSockets = require("ws"),
-    BlockChain = require("./blockchain"); // getting the block chain cause there is a data
+    Blockchain = require("./blockchain"); // getting the block chain cause there is a data
 
 
-const { getLastBlock } = BlockChain;    
+const { getLastBlock } = Blockchain;
 const sockets = [];
 
 const getSockets = () => sockets;
@@ -30,12 +30,9 @@ const getAll = () => {
 const blockchainResponse = (data) => {
     return {
         type: BLOCKCHAIN_RESPONSE,
-        data: data
+        data
     };
 };
-
-
-
 
 const startP2PServer = server => {
     const wsServer = new WebSockets.Server({ server });
@@ -47,17 +44,39 @@ const startP2PServer = server => {
 };
 
 // work when new socket gets connect
-const initSocketConnection = socket => {
-    sockets.push(socket);
-    handleSocketError(socket);
-    socket.on("message", (data) =>{
-        console.log(data);
-    });
-    // function to send message
-    setTimeout(() => {
-        socket.send("welcome!")
-    }, 5000);
+const initSocketConnection = ws => {
+    sockets.push(ws);
+    handleSocketMessage(ws);
+    handleSocketError(ws);
+    sendMessage(ws, getLatest());
 };
+
+// check the data is possible to make json
+const parseData = data => {
+    try {
+        return JSON.parse(data)
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+const handleSocketMessage = ws => {
+    ws.on("message", data => {
+        const message = parseData(data);
+        if(message === null){
+            return;
+        }
+
+        console.log(message);
+        switch(message.type){
+            case GET_LATEST:    
+            sendMessage(ws, getLastBlock());
+            break;
+        }
+    });
+};
+
+const sendMessage = (ws, message) => ws.send(JSON.stringify(message));
 
 const handleSocketError = ws => {
     const closeSocketConnection = ws => {
