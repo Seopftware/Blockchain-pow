@@ -27,7 +27,7 @@ let blockchain = [genesisBlock];
 // console.log(blockchain) // first block
 
 // functional programming
-const getLastBlock = () => blockchain[blockchain.length -1];
+const getNewestBlock = () => blockchain[blockchain.length -1];
 const getTimestamp = () => new Date().getTime() / 1000;
 const getBlockchain = () => blockchain;
 const createHash = (index, previousHash, timestamp, data) =>
@@ -40,7 +40,7 @@ const createHash = (index, previousHash, timestamp, data) =>
  **/
 
  const createNewBlock = data => {
-    const previousBlock = getLastBlock();
+    const previousBlock = getNewestBlock();
     const newBlockIndex = previousBlock.index + 1; // index
     const newTimestamp = getTimestamp();
     const newHash = createHash(
@@ -63,8 +63,8 @@ const createHash = (index, previousHash, timestamp, data) =>
 const getBlockHash = block => createHash(block.index, block.previousHash, block.timestamp, block.data);
 
 // Validate of block data
-const isNewBlockValid = (candidateBlock, latestBlock) => { // invallid new block
-    if(!isNewStructureValid(candidateBlock)){
+const isBlockValid = (candidateBlock, latestBlock) => { // invallid new block
+    if(!isBlockStructureValid(candidateBlock)){
         console.log("The candidate block structure is not valid");
         return false;
     }    
@@ -84,7 +84,7 @@ const isNewBlockValid = (candidateBlock, latestBlock) => { // invallid new block
 }
 
 // Validate of block structure
-const isNewStructureValid = block => {
+const isBlockStructureValid = block => {
     // true or false
     return(
         typeof block.index === 'number' 
@@ -109,7 +109,7 @@ const isChainValid = candidateChain => {
     // i is start 1, because we don't need to check genesisblock (genesis block doesn't have a previous block)
     for(let i=1; i<candidateChain.length; i++){ 
         // candidate block(new block) , latest block(previous block)
-        if(!isNewBlockValid(candidateChain[i], candidateChain[i - 1])){
+        if(!isBlockValid(candidateChain[i], candidateChain[i - 1])){
             return false;
         }
     }
@@ -127,7 +127,7 @@ const replaceChain = candidateBlock => {
 };
 
 const addBlockToChain = candidateBlock => {
-    if(isNewBlockValid(candidateBlock, getLastBlock())){
+    if(isBlockValid(candidateBlock, getNewestBlock())){
         getBlockchain().push(candidateBlock);
         return true;
     }else{
@@ -136,7 +136,10 @@ const addBlockToChain = candidateBlock => {
 };
 
 module.exports={
-    getLastBlock,
+    getNewestBlock,
     getBlockchain,
-    createNewBlock
+    createNewBlock,
+    isBlockStructureValid,
+    addBlockToChain,
+    replaceChain
 }
