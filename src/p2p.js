@@ -2,7 +2,14 @@ const WebSockets = require("ws"),
     Blockchain = require("./blockchain"); // getting the block chain cause there is a data
 
 
-const { getNewstBlock } = Blockchain;
+const { 
+    getNewestBlock, 
+    isBlockStructureValid, 
+    replaceChain, 
+    getBlockchain,
+    addBlockToChain
+    } = Blockchain;
+
 const sockets = [];
 
 const getSockets = () => sockets;
@@ -22,8 +29,8 @@ const getLatest = () => {
 
 const getAll = () => {
     return {
-        type:GET_ALL,
-        data:null
+        type: GET_ALL,
+        data: null
     };
 };
 
@@ -72,9 +79,11 @@ const handleSocketMessage = ws => {
             case GET_LATEST:
                 sendMessage(ws, responseLatest());
                 break;
-
+            case GET_ALL:
+                sendMessage(ws, responseAll());
+                break;
             case BLOCKCHAIN_RESPONSE:
-                const receivedBlocks = message.data
+                const receivedBlocks = message.data;
                 if(receivedBlocks === null){ // no block
                     break;
                 }
@@ -98,12 +107,28 @@ const handleBlockchainResponse = receivedBlocks => {
         return;
     }
 
-
-}
+    const newestBlock = getNewestBlock();
+    // 내가 받은 블록체인의 인덱스가 나의 블록체인 인덱스보다 작을 때 (우리보다 앞선 블록을 받은 경우)
+    if(latestBlockReceived.index > newestBlock.index){
+        if(newestBlock.hash === latestBlockReceived.previousHash){ // 1 블록만 앞선 경우
+            addBlockToChain(latestBlockReceived);
+        }
+        else if(receivedBlocks.length === 1){ // 2개 이상의 블록이 앞선 경우 (블록체인 전체를 가져와서 바꾼다.)
+            sendMessageToAll(getAll());
+        }
+        else{
+            replaceChain(receivedBlocks);
+        }
+    }
+};
 
 const sendMessage = (ws, message) => ws.send(JSON.stringify(message));
 
-const responseLatest = () => blockchainResponse(getNewstBlock());
+const sendMessageToAll = message => sockets.forEach(ws => sendMessage(ws, message));
+
+const responseLatest = () => blockchainResponse([getNewestBlock()]);
+
+const responseAll = () => blockchainResponse(getBlockchain());
 
 const handleSocketError = ws => {
     const closeSocketConnection = ws => {
