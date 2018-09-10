@@ -111,7 +111,9 @@ const handleBlockchainResponse = receivedBlocks => {
     // 내가 받은 블록체인의 인덱스가 나의 블록체인 인덱스보다 작을 때 (우리보다 앞선 블록을 받은 경우)
     if(latestBlockReceived.index > newestBlock.index){
         if(newestBlock.hash === latestBlockReceived.previousHash){ // 1 블록만 앞선 경우
-            addBlockToChain(latestBlockReceived);
+            if(addBlockToChain(latestBlockReceived)){ // 만약, 새로운 블록 생성에 성공하면 (true)
+                broadcastNewBlock(); // 전체 노드에게 broad casting
+            }
         }
         else if(receivedBlocks.length === 1){ // 2개 이상의 블록이 앞선 경우 (블록체인 전체를 가져와서 바꾼다.)
             sendMessageToAll(getAll());
@@ -129,6 +131,8 @@ const sendMessageToAll = message => sockets.forEach(ws => sendMessage(ws, messag
 const responseLatest = () => blockchainResponse([getNewestBlock()]);
 
 const responseAll = () => blockchainResponse(getBlockchain());
+
+const broadcastNewBlock = () => sendMessageToAll(responseLatest());
 
 const handleSocketError = ws => {
     const closeSocketConnection = ws => {
@@ -152,5 +156,6 @@ const connectToPeers = newPeer => {
 
 module.exports = {
     startP2PServer,
-    connectToPeers
+    connectToPeers,
+    broadcastNewBlock
 }

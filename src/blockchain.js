@@ -50,7 +50,9 @@ const createNewBlock = data => {
        newTimestamp,
        data
    );
-    addBlockToChain(newBlock);
+    addBlockToChain(newBlock); // 새로운 블록 추가
+    // p2p는 block chain을 요구, block chain은 p2p를 요구 (circular dependency 발생)
+    require("./p2p").broadcastNewBlock(); // circular dependency를 방지하기 위해 임시방편으로.. // import 없이 함수를 부르는 방법
     return newBlock;
 };
 
