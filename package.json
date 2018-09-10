@@ -10,6 +10,7 @@
     "body-parser": "^1.18.3",
     "crypto-js": "^3.1.9-1",
     "express": "^4.16.3",
+    "hex-to-binary": "^1.0.1",
     "morgan": "^1.9.0",
     "node": "^10.9.0",
     "ws": "^6.0.0"
