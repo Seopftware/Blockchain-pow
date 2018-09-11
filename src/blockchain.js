@@ -206,6 +206,13 @@ const isChainValid = candidateChain => {
     return true;
 }
 
+// [4**2, 5**2, 2**2, ...] 제곱근 형태로 형성됨.
+const sumDifficulty = anyBlockchain => 
+    anyBlockchain
+        .map(block => block.difficulty)
+        .map(difficulty => Math.pow(2, difficulty))
+        .reduce((a, b) => a + b);
+
 const replaceChain = candidateChain => {
     // blockchain want more longer chain
     if(isChainValid(candidateChain) && candidateChain.length > getBlockchain().length){
