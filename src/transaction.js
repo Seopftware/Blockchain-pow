@@ -1,5 +1,8 @@
 const CryptoJS = require("crypto-js"),
-    ec = require("elliptic");
+    ellipic = require("elliptic"),
+    utils = require("./utils")
+
+const ec = new elliptic.ec('secp256ka'); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
 
 class TxOut{
     constructor(address, amount){
@@ -19,9 +22,9 @@ class Transaction{
 
 // Unspent Transaction Output
 class UTxOut{
-    constructor(uTxOutId, uTxOutIndex, address, amount){
-        this.uTxOutId=uTxOutId;
-        this.uTxOutIndex=uTxOutIndex
+    constructor(txOutId, txOutIndex, address, amount){
+        this.txOutId=txOutId;
+        this.txOutIndex=txOutIndex;
         this.address=address;
         this.amount=amount;
     }
@@ -42,4 +45,34 @@ const getTxId = tx =>{
         .reduce((a, b) => a + b, "");
 
         return CryptoJS.SHA256(txInContent + txOutContent).toString();
+}
+
+
+const findUTxOut = (txOutId, txOutIndex, uTxOutList) => {
+    return uTxOutList.find(
+        uTxOut => uTxOut.txOutId === txOutId && uTxOut.txOutIndex === txOutIndex);
+}
+
+const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
+
+    const txIn = tx.txIns[txInIndex];
+    const dataToSign = tx.id;
+    const referencedUTxOut = findUTxOut(txIn.txOutId, tx.txOutIndex, uTxOuts); // 리스트 안의 Unspent Transaction Output을 찾는 과정
+    if(referencedUTxOut === null){ // 내가 쓸 수 있는 코인이 없다는 뜻
+        return;
+    }
+    
+    const key = ec.keyFromPrivate(privateKey, "hex");
+    const signature = uills.toHexString(key.sign(dataToSign).toDER()); // DER encoding
+    return signature;
+};
+
+const updateUTxOuts = (newTxs, uTxOutList) => {
+    const newUTxOuts = newTxs
+    .map(tx => {
+        tx.txOuts.map((txOut, index) => {
+            new UTxOut(tx.id, index, txOut.address, txOut.amount);
+        });
+    })
+    .reduce((a, b) => a.contact(b), []);
 }
