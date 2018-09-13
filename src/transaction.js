@@ -91,7 +91,17 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
     };
 
     const isTxInStructureValid = (txIn) => {
-        // todo
+        if(txIn === null){
+            return false;
+        }else if(typeof txIn.signature!=="string"){
+            return false;
+        }else if(typeof txIn.txOutId !== "string"){
+            return false;
+        }else if(typeof txIn.txOutIndex !== "number"){
+            return false;
+        }else{
+            return false;
+        }
     }
 
     const isTxOutStructureValid = (txOut) => {
