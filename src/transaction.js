@@ -33,7 +33,7 @@ class UTxOut{
 // 모든 unspent 트랜잭션 아웃풋을 다 넣어둬야함.
 let uTxOuts=[]; // uTxOutList는 여러개의 unspent transaction ouput을 뜻함
 
-// get transaction id
+// get transaction id => hash 값임
 const getTxId = tx =>{
     // 전체 input transaction을 더한 값
     const txInContent = tx.txIns
@@ -50,7 +50,7 @@ const getTxId = tx =>{
 
 const findUTxOut = (txOutId, txOutIndex, uTxOutList) => {
     return uTxOutList.find(
-        uTxOut => uTxOut.txOutId === txOutId && uTxOut.txOutIndex === txOutIndex);
+        uTxO => uTxO.txOutId === txOutId && uTxO.txOutIndex === txOutIndex);
 }
 
 const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
@@ -145,6 +145,44 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
             return false;
         }else if(!tx.txOuts.map(isTxOutStructureValid).reduce((a, b) => a && b, true)){
             console.log("The structure of one of the txOut is not valid");
+            return false;
+        }else{
+            return true;
+        }
+    };
+
+    // 돈을 사용할 사람에 의하여 사인되었음을 체크하는 부분
+    // 코인의 주인임을 증명하는 방법 => 트랜잭션의 인풋 사인, 나의 주소가 트랜잭션 ID로 사인을 증명할 수 있기 떄문
+    const validateTxIn = (txIn, tx, uTxOutList) => {
+        const wantedtxOut = uTxOutList
+        .find(uTxO => uTxO.txOutId === txIn.txOutId 
+            && uTxO.txOutIndex === txIn.txOIndex);
+
+        if(wantedtxOut === null){ // 만약, 원하는 ouput을 찾지 못했을 경우(즉, 돈을 보내는 사람이 쓸 돈이 없다는 뜻이기도 함)
+            return false;
+        }else{
+            const address = wantedtxOut.address;
+            const key = ec.keyFromPublic(address, "hex"); // 주소 검증
+            return key.verify(tx.id, txIn.signature); // 나의 프라이빗 키로 사인을 하면, 나중에 내가 사인했다는 것을 나의 퍼블릭 키로 증명을 할 수 있게 된다.
+        }           
+    }
+    const validateTx = (tx, uTxOutList) => {
+        if(getTxId(tx) !== tx.id){
+            return false;
+        }
+
+        // 트랜잭션 인풋이 유효한지 검증
+        const hasValidTxIns = tx.txIns.map(txIn => validateTxIn(txIn, tx, uTxOutList));
+        if(!hasValidTxIns){
+            return false;
+        }
+
+        // 트랜잭션이 유효한 인풋을 가지고 있으면
+        const amountInTxIns = () => {}
+        const amountInTxOuts = () => {}
+
+        // if i want to give 10, Input 50 => Output 40 & 10 
+        if(amountInTxIns !== amountInTxOuts){
             return false;
         }else{
             return true;
