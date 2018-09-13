@@ -100,11 +100,33 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         }else if(typeof txIn.txOutIndex !== "number"){
             return false;
         }else{
-            return false;
+            return true;
         }
     }
 
-    const isTxOutStructureValid = (txOut) => {
+    const isAddressValid = (address) => {
+        if(address.length !== 130){ //현재 우리가 사용하는 라이브러리의 address 주소 길이는 300이다.
+            return false;
+        }else if(address.match("^[a-fA-F0-9]+$") === null){ // address는 hexadecimal pattern(^[a-fA-F0-9]+$)과 매칭이 되어야 한다.
+            return false;
+        }else if(!address.startsWith("04")){ // addres가 04로 시작하지 않는 경우
+            return false;
+        }else{
+            return true;
+        }
+    }
+    const isTxOutStructureValid = (txOut) => {  
+        if(txOut === null){
+            return false;
+        }else if(typeof txOut.address !== "string"){
+            return false;
+        }else if(!isAddressValid(txOut.address)){
+            return false;
+        }else if(typeof txOut.amount !=="number"){
+            return false;
+        }else{
+            return true;
+        }
 
     }
     const isTxStructureValid = (tx) => {
