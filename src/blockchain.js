@@ -162,7 +162,7 @@ const isBlockValid = (candidateBlock, latestBlock) => { // invallid new block
         console.log("The previous hash of the candidate block is not the hash of the latest block");
         return false;
     }
-    else if(getBlockHash(candidateBlock) !== candidateBlock.hash){ // hash check again 
+    else if(getBlockHash(candidateBlock) !== candidateBlock.hash){ // 내 블록의 해쉬값 = 후보 블록의 해쉬값
         console.log("The hash of this block is invaillid");
         return false;
     }
@@ -206,16 +206,17 @@ const isChainValid = candidateChain => {
     return true;
 }
 
-// [4**2, 5**2, 2**2, ...] 제곱근 형태로 형성됨.
+// 난이도의 합을 계산 (다른 블록체인의 난이도 값과 비교해주기 위해)
 const sumDifficulty = anyBlockchain => 
     anyBlockchain
         .map(block => block.difficulty)
-        .map(difficulty => Math.pow(2, difficulty))
-        .reduce((a, b) => a + b);
+        .map(difficulty => Math.pow(2, difficulty)) // [4**2, 5**2, 2**2, ...] 제곱근 형태로 형성됨.
+        .reduce((a, b) => a + b) // reducer 함수 check
 
 const replaceChain = candidateChain => {
     // blockchain want more longer chain
-    if(isChainValid(candidateChain) && candidateChain.length > getBlockchain().length){
+    // 후보체인의 난이도가 우리의 블록체인 난이도 보다 높다면 => 난이도가 더 어렵다고 볼 수 있음 => 교체
+    if(isChainValid(candidateChain) && sumDifficulty(candidateChain) > sumDifficulty(getBlockchain())){
         blockchain = candidateChain;
         return true;
     } else{
