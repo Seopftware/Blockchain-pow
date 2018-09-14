@@ -1,8 +1,10 @@
 const CryptoJS = require("crypto-js"),
-    ellipic = require("elliptic"),
+    elliptic = require("elliptic"),
     utils = require("./utils")
 
-const ec = new elliptic.ec('secp256k1'); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
+
+const ec = new elliptic.ec("secp256k1"); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
+
 
 const COINBASE_AMOUNT = 50; // 채굴시 얻게될 수량
 
@@ -31,9 +33,6 @@ class UTxOut{
         this.amount=amount;
     }
 }
-
-// 모든 unspent 트랜잭션 아웃풋을 다 넣어둬야함.
-let uTxOuts=[]; // uTxOutList는 여러개의 unspent transaction ouput을 뜻함 (아웃풋의 총합)
 
 // get transaction id => hash 값임
 const getTxId = tx =>{
@@ -66,7 +65,7 @@ const signTxIn = (tx, txInIndex, privateKey, uTxOutList) => {
 
     // 존재하는 주소인지 체크 (트랜잭션 인풋 주소가 지갑에서 얻은 주소와 같은지 체크)
     const referencedAddress = referencedTxOut.address;
-    if(getPublickey(privateKey) !== referencedAddress){
+    if(getPublicKey(privateKey) !== referencedAddress){
         return false;
     }
     const key = ec.keyFromPrivate(privateKey, "hex");
@@ -75,7 +74,7 @@ const signTxIn = (tx, txInIndex, privateKey, uTxOutList) => {
 };
 
 // wallet.js에 똑같은 기능의 함수가 있지만, circular input을 방지하기 위해 함수를 하나 더 생성
-const getPublickey = (privateKey) => {
+const getPublicKey = (privateKey) => {
     return ec
         .keyFromPrivate(privateKey, "hex")
         .getPublic()
@@ -234,11 +233,25 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         }
     }
 
+    // 채굴자에게 보상을 해주기 위한 coinbase tx
+    // 한 개의 인풋과 아웃풋을 가짐
+    const createCoinbaseTx = (address, blockIndex) => {
+        const tx = new Transaction();
+        const txIn = new TxIn();
+        txIn.signature = "";
+        txIn.txOutId = blockIndex;
+        tx.txIns[txIn];
+        tx.txOut = [new TxOut(address, COINBASE_AMOUNT)]; // 블록을 찾은 자의 주소
+        tx.id = getTxId(tx);
+        return tx;
+    }
+
     module.export = {
         getPublicKey,
         getTxId,
         signTxIn,
         TxIn,
         Transaction,
-        TxOut
+        TxOut,
+        createCoinbaseTx
     }

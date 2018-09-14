@@ -1,5 +1,8 @@
 const CryptoJS = require("crypto-js"),
+Wallet = require("./wallet"),
 hexToBinary = require("hex-to-binary");
+
+const { getBalance, getPublicFromWallet }=Wallet;
 
 const BLOCK_GENERATION_INTERVAL = 10; // 몇 분마다 블록이 채굴되는지 조절. (단위: 초)
 const DIFFICULTY_ADJUSMENT_INTERVAL= 10; // 10개의 블록이 생성될 때 마다 난이도 조절(비트코인의 경우 2016)
@@ -32,6 +35,9 @@ const genesisBlock = new Block(
 
 // block chain is array of block
 let blockchain = [genesisBlock];
+
+// 모든 unspent 트랜잭션 아웃풋을 다 넣어둬야함.
+let uTxOuts=[]; // uTxOutList는 여러개의 unspent transaction ouput을 뜻함 (아웃풋의 총합)
 
 // functional programming
 const getNewestBlock = () => blockchain[blockchain.length -1];
@@ -233,11 +239,14 @@ const addBlockToChain = candidateBlock => {
     }
 };
 
+const getAccountBalance = () => getBalance(getPublicFromWallet(), uTxOuts);
+
 module.exports={
     getNewestBlock,
     getBlockchain,
     createNewBlock,
     isBlockStructureValid,
     addBlockToChain,
-    replaceChain
+    replaceChain,
+    getAccountBalance
 }

@@ -18,8 +18,8 @@ const generatorPrivateKey = () => {
 
 // privateKey 파일로 부터 내용 읽기
 const getPrivateFromWallet = () => {
-    const buffer = fs.readFileSync(privateKeyLocation, "utf-8");
-    buffer.toString();
+    const buffer = fs.readFileSync(privateKeyLocation, "utf8");
+    return buffer.toString();
 };
 
 // Get Public address from privateKey 
@@ -111,5 +111,7 @@ const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
 };
 
 module.exports ={
-    initWallet
+    initWallet,
+    getBalance,
+    getPublicFromWallet
 }
