@@ -15,7 +15,7 @@ class TxOut{
 
 class TxIn{
     // 아직 사용되지 않은 트랜잭션 아웃풋 = 이ㅓㄴ 트랜잭션의 사용되지 않은 아웃풋
-    // uTxOutId, uTxOutIndex, Signature
+    // txOutId, txOutIndex, Signature
 }
 
 class Transaction{
@@ -237,5 +237,6 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
     module.export = {
         getPublicKey,
         getTxId,
-        signTxIn
+        signTxIn,
+        TxIn
     }

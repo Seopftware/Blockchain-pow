@@ -4,7 +4,7 @@ const elliptic = require("elliptic"),
     _ = require("lodash"),
     Transactions = require("./transactions");
 
-const { getPublicKey, getTxId, signTxIn } = Transactions;
+const { getPublicKey, getTxId, signTxIn, TxIn, Transaction } = Transactions;
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -67,7 +67,23 @@ const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
 const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
     const myAddress = getPublicKey(privateKey);
     const myUTxOuts = uTxOutList.filter(uTxO => uTxO.address === myAddress);
-    const { inculudedUTxOuts, leftOverAmount } = findAmountInUTxOuts(amount, myUTxOuts);
+    const { inculudedUTxOuts, leftOverAmount } = findAmountInUTxOuts(
+        amount, 
+        myUTxOuts
+    );
+
+    // unspent transaction outputs을 가져다가 인풋으로 만드는 작업
+    const toUnsignedTxIn = uTxOut => {
+        const txIn = new TxIn();
+        txIn.txOutId = uTxOut.txOutId;
+        tx.txOutIndex = uTxOut.txOutIndex;
+    }
+
+    const unsignedTxIns = inculudedUTxOuts.map(toUnsignedTxIn);
+    const tx = new Transaction();
+
+    tx.txIns = unsignedTxIns;
+    tx.txOuts = 
 };
 
 module.exports ={
