@@ -1,7 +1,10 @@
 const elliptic = require("elliptic"),
     path = require("path"),
     fs = require("fs"), // node-module file system
-    _ = require("lodash");
+    _ = require("lodash"),
+    Transactions = require("./transactions");
+
+const { getPublicKey, getTxId, signTxIn } = Transactions;
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -40,6 +43,19 @@ const initWallet = () => {
     }
     const newPrivateKey = generatorPrivateKey();
     fs.writeFileSync(privateKeyLocation, newPrivateKey);
+}
+
+// 나의 모든 unspent transaction output을 다 더하면 나의 balance
+const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
+    
+}
+
+// how much send, where send, address, need private key, unspent transaction output
+const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
+    const myAddress = getPublicKey(privateKey);
+    const myUTxOuts = uTxOutList.filter(uTxO => uTxO.address === myAddress);
+    
+
 }
 
 module.exports ={

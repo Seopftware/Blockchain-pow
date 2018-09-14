@@ -233,3 +233,9 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
             return true;
         }
     }
+
+    module.export = {
+        getPublicKey,
+        getTxId,
+        signTxIn
+    }
