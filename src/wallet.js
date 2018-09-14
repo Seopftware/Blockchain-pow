@@ -4,7 +4,7 @@ const elliptic = require("elliptic"),
     _ = require("lodash"),
     Transactions = require("./transactions");
 
-const { getPublicKey, getTxId, signTxIn, TxIn, Transaction } = Transactions;
+const { getPublicKey, getTxId, signTxIn, TxIn, Transaction, TxOut } = Transactions;
 
 const ec = new elliptic.ec('secp256k1');
 
@@ -63,6 +63,22 @@ const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
     console.log("Not enough founds");
 }
 
+// 50이 있고, 10을 보냈을 때, 40이남음
+// receiverAddress-
+// myAddress-transaction output
+// amount-내가 타인에게 보내는 수량
+// leftOverAmount-나에게 남는 수량
+const createTxOut = (receiverAddress, myAddress, amount, leftOverAmount) => {
+    const receiverTxOut = new TxOut(receiverAddress, amount);
+    if(leftOverAmount === 0 ){
+        return [receiverTxOut];
+    }else{ // 50이 있고, 10을 보내고, 40이 남는다면
+        const leftOverTxOut = new TxOut(myAddress, leftOverAmount); // 남는 40을 받기 위한 tx
+        retufn [receiverTxOut, leftOverAmount];
+    }
+
+}
+
 // how much send, where send, address, need private key, unspent transaction output
 const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
     const myAddress = getPublicKey(privateKey);
@@ -83,7 +99,15 @@ const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
     const tx = new Transaction();
 
     tx.txIns = unsignedTxIns;
-    tx.txOuts = 
+    tx.txOuts = createTxOuts(receiverAddress, myAddress, amount, leftOverAmount);
+
+    tx.id = getTxId(tx);
+
+    tx.txIns = tx.txIns.map((txIn, index) => {
+        txIn.signature = (tx, index, privateKey, uTxOutList);
+        return txIn;
+    });
+    return tx;
 };
 
 module.exports ={

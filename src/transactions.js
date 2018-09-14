@@ -56,10 +56,10 @@ const findUTxOut = (txOutId, txOutIndex, uTxOutList) => {
 }
 
 // tx에 input에 사인하는 건 나다.
-const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
+const signTxIn = (tx, txInIndex, privateKey, uTxOutList) => {
     const txIn = tx.txIns[txInIndex];
     const dataToSign = tx.id; // check transaction id
-    const referencedUTxOut = findUTxOut(txIn.txOutId, tx.txOutIndex, uTxOuts); // 리스트 안의 Unspent Transaction Output을 찾는 과정
+    const referencedUTxOut = findUTxOut(txIn.txOutId, tx.txOutIndex, uTxOutList); // 리스트 안의 Unspent Transaction Output을 찾는 과정
     if(referencedUTxOut === null){ // 내가 쓸 수 있는 코인이 없다는 뜻
         return;
     }
@@ -238,5 +238,7 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         getPublicKey,
         getTxId,
         signTxIn,
-        TxIn
+        TxIn,
+        Transaction,
+        TxOut
     }
