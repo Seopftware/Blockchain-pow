@@ -166,6 +166,10 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
             return key.verify(tx.id, txIn.signature); // 나의 프라이빗 키로 사인을 하면, 나중에 내가 사인했다는 것을 나의 퍼블릭 키로 증명을 할 수 있게 된다.
         }           
     }
+
+    // 트랜잭션 인풋의 수량을 체크하기 위해 필요한 함수 (트랜잭션 아웃풋과 달리 인풋에서는 갯수를 볼 수 없기 때문에)
+    const getAmountInTxIn = (txIn, uTx) => findUTxOut(txIn.txOutId, txIn.txOutIndex, uTxOutList).amount // 트랜잭션 인풋과 아웃풋 리스트를 가져와야함 (트랜잭션 아웃풋은 Array에 있다.)
+
     const validateTx = (tx, uTxOutList) => {
         if(getTxId(tx) !== tx.id){
             return false;
@@ -178,8 +182,13 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         }
 
         // 트랜잭션이 유효한 인풋을 가지고 있으면
-        const amountInTxIns = () => {}
-        const amountInTxOuts = () => {}
+        const amountInTxIns = tx.txIns
+            .map(txIn => getAmountInTxIn(txIn, uTxOutList))
+            .reduce((a, b) => a + b, 0);
+
+        const amountInTxOuts = tx.txOuts
+            .map(txOut => txOut.amount)
+            .reduce((a, b) => a + b, 0);
 
         // if i want to give 10, Input 50 => Output 40 & 10 
         if(amountInTxIns !== amountInTxOuts){
