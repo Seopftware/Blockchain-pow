@@ -2,7 +2,7 @@ const CryptoJS = require("crypto-js"),
     ellipic = require("elliptic"),
     utils = require("./utils")
 
-const ec = new elliptic.ec('secp256ka'); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
+const ec = new elliptic.ec('secp256k1'); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
 
 const COINBASE_AMOUNT = 50; // 채굴시 얻게될 수량
 

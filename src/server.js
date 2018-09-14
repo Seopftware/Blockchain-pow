@@ -2,11 +2,12 @@ const express = require("express"),
   bodyParser = require("body-parser"),
   morgan = require("morgan"),
   Blockchain = require("./blockchain"),
-  P2P = require("./p2p");
+  P2P = require("./p2p"),
+  Wallet = require("./wallet");
 
 const { getBlockchain, createNewBlock } = Blockchain;
 const { startP2PServer, connectToPeers} = P2P;
-
+const { initWallet } = Wallet;
 // environment varialbe call PORT if doesn't find it => 3000
 // typing 'export HTTP_PORT=4000' in your console
 const PORT = process.env.HTTP_PORT || 3003;
@@ -36,6 +37,7 @@ app.post("/peers", (req, res) => {
 const server = app.listen(PORT, () => 
 console.log(`TripCoin Server running on ${PORT} ✅`));
 
+initWallet();
 startP2PServer(server);
 
 
