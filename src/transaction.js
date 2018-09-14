@@ -33,7 +33,7 @@ class UTxOut{
 }
 
 // 모든 unspent 트랜잭션 아웃풋을 다 넣어둬야함.
-let uTxOuts=[]; // uTxOutList는 여러개의 unspent transaction ouput을 뜻함
+let uTxOuts=[]; // uTxOutList는 여러개의 unspent transaction ouput을 뜻함 (아웃풋의 총합)
 
 // get transaction id => hash 값임
 const getTxId = tx =>{
@@ -55,19 +55,32 @@ const findUTxOut = (txOutId, txOutIndex, uTxOutList) => {
         uTxO => uTxO.txOutId === txOutId && uTxO.txOutIndex === txOutIndex);
 }
 
+// tx에 input에 사인하는 건 나다.
 const signTxIn = (tx, txInIndex, privateKey, uTxOut) => {
-
     const txIn = tx.txIns[txInIndex];
     const dataToSign = tx.id; // check transaction id
     const referencedUTxOut = findUTxOut(txIn.txOutId, tx.txOutIndex, uTxOuts); // 리스트 안의 Unspent Transaction Output을 찾는 과정
     if(referencedUTxOut === null){ // 내가 쓸 수 있는 코인이 없다는 뜻
         return;
     }
-    
+
+    // 존재하는 주소인지 체크 (트랜잭션 인풋 주소가 지갑에서 얻은 주소와 같은지 체크)
+    const referencedAddress = referencedTxOut.address;
+    if(getPublickey(privateKey) !== referencedAddress){
+        return false;
+    }
     const key = ec.keyFromPrivate(privateKey, "hex");
     const signature = uills.toHexString(key.sign(dataToSign).toDER()); // DER encoding
     return signature;
 };
+
+// wallet.js에 똑같은 기능의 함수가 있지만, circular input을 방지하기 위해 함수를 하나 더 생성
+const getPublickey = (privateKey) => {
+    return ec
+        .keyFromPrivate(privateKey, "hex")
+        .getPublic()
+        .encode("hex");
+}
 
 
 const updateUTxOuts = (newTxs, uTxOutList) => {
