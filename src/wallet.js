@@ -47,16 +47,28 @@ const initWallet = () => {
 
 // 나의 모든 unspent transaction output을 다 더하면 나의 balance
 const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
-    
+    let currentAmount = 0;
+    const inculudedUTxOuts = [];
+
+    // myUTxOut-개별적 하나의 Tx, myUTxOuts-리스트
+    for(const myUTxOut of myUTxOuts){
+        inculudedUTxOuts.push(myUTxOut);
+        currentAmount = currentAmount + myUTxOut.amount;
+
+        if(currentAmount >= amountNeeded){
+            const leftOverAmount = currentAmount - amountNeeded; // 남은 수량
+            return { inculudedUTxOuts, leftOverAmount };
+        }
+    }
+    console.log("Not enough founds");
 }
 
 // how much send, where send, address, need private key, unspent transaction output
 const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
     const myAddress = getPublicKey(privateKey);
     const myUTxOuts = uTxOutList.filter(uTxO => uTxO.address === myAddress);
-    
-
-}
+    const { inculudedUTxOuts, leftOverAmount } = findAmountInUTxOuts(amount, myUTxOuts);
+};
 
 module.exports ={
     initWallet
