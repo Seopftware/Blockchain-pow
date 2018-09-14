@@ -4,6 +4,8 @@ const CryptoJS = require("crypto-js"),
 
 const ec = new elliptic.ec('secp256ka'); // elliptic라이브러리를 사용하기 위해서는 initialize가 필요.
 
+const COINBASE_AMOUNT = 50; // 채굴시 얻게될 수량
+
 class TxOut{
     constructor(address, amount){
         this.address=address;
@@ -171,6 +173,10 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
     const getAmountInTxIn = (txIn, uTx) => findUTxOut(txIn.txOutId, txIn.txOutIndex, uTxOutList).amount // 트랜잭션 인풋과 아웃풋 리스트를 가져와야함 (트랜잭션 아웃풋은 Array에 있다.)
 
     const validateTx = (tx, uTxOutList) => {
+        if(!isTxStructureValid(tx)){
+            return false;
+        }
+
         if(getTxId(tx) !== tx.id){
             return false;
         }
@@ -197,3 +203,20 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
             return true;
         }
     };
+
+    // coin base tx has only one input & output
+    const validateCoinbaseTx = (tx, blockIndex) => {
+        if(getTxId(tx) !== tx.id){
+            return false;
+        }else if(tx.txIns.length !== 1){ // coin base tx have only one input tx from the blockchain, 1개 이상의 tx면 무효!
+            return false;
+        }else if(tx.txIns[0].txOutIndex !== blockIndex){
+            return false;
+        }else if(tx.txOuts.length !== 1){ // 아웃풋은 채굴자에게 가고, 채굴자는 한 명!
+            return false;
+        }else if(tx.txOuts[0].amount !== COINBASE_AMOUNT){ // 유일한 아웃풋의 수량이 내가 정한 수량보다 크다면
+            return false;
+        }else{
+            return true;
+        }
+    }
