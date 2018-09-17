@@ -1,8 +1,10 @@
 const CryptoJS = require("crypto-js"),
-Wallet = require("./wallet"),
-hexToBinary = require("hex-to-binary");
+    Wallet = require("./wallet"),
+    Transactions = require("./transactions"),
+    hexToBinary = require("hex-to-binary");
 
-const { getBalance, getPublicFromWallet }=Wallet;
+const { getBalance, getPublicFromWallet } = Wallet;
+const { createCoinbaseTx } = Transactions;
 
 const BLOCK_GENERATION_INTERVAL = 10; // 몇 분마다 블록이 채굴되는지 조절. (단위: 초)
 const DIFFICULTY_ADJUSMENT_INTERVAL= 10; // 10개의 블록이 생성될 때 마다 난이도 조절(비트코인의 경우 2016)
@@ -51,7 +53,16 @@ const createHash = (index, previousHash, timestamp, data, difficulty, nonce) =>
         index + previousHash + timestamp + JSON.stringify(data) + difficulty + nonce
     ).toString();
 
-const createNewBlock = data => {
+const createNewBlock = () => {
+    const coinbaseTx = createCoinbaseTx(
+        getPublicFromWallet(), 
+        getNewestBlock().index + 1
+    );
+    const blockData = [coinbaseTx];
+    return createNewRawBlock(blockData);
+};
+
+const createNewRawBlock = data => {
    const previousBlock = getNewestBlock();
    const newBlockIndex = previousBlock.index + 1;
    const newTimestamp = getTimestamp();
@@ -187,7 +198,7 @@ const isBlockStructureValid = block => {
         && typeof block.hash === 'string'  
         && typeof block.previousHash === 'string'
         && typeof block.timestamp === 'number'
-        && typeof block.data === 'string'
+        && typeof block.data === 'object' // transaction confirm
     )
 }
 

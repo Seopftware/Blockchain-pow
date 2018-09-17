@@ -240,11 +240,11 @@ const updateUTxOuts = (newTxs, uTxOutList) => {
         const txIn = new TxIn();
         txIn.signature = "";
         txIn.txOutId = blockIndex;
-        tx.txIns[txIn];
-        tx.txOut = [new TxOut(address, COINBASE_AMOUNT)]; // 블록을 찾은 자의 주소
+        tx.txIns = [txIn];
+        tx.txOuts = [new TxOut(address, COINBASE_AMOUNT)]; // 블록을 찾은 자의 주소
         tx.id = getTxId(tx);
         return tx;
-    }
+    };
 
     module.export = {
         getPublicKey,

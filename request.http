@@ -1,12 +1,12 @@
-GET http://localhost:3003/blocks
+GET http://localhost:3001/blocks
 
 ###
-POST http://localhost:3004/blocks
+POST http://localhost:3001/blocks
 Content-Type: application/json
 
-{
-    "data": "This is the 4123123 block"
-}
+#{
+#    "data": "This is the 4123123 block"
+#}
 
 ###
 POST http://localhost:3003/peers
