@@ -1,7 +1,7 @@
 GET http://localhost:3001/blocks
 
 ###
-POST http://localhost:3001/blocks
+POST http://localhost:3000/blocks
 Content-Type: application/json
 
 #{
@@ -17,4 +17,4 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:3005/me/balance
+GET http://localhost:3000/me/balance

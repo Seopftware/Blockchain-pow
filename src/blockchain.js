@@ -4,7 +4,7 @@ const CryptoJS = require("crypto-js"),
     hexToBinary = require("hex-to-binary");
 
 const { getBalance, getPublicFromWallet } = Wallet;
-const { createCoinbaseTx } = Transactions;
+const { createCoinbaseTx, processTxs } = Transactions;
 
 const BLOCK_GENERATION_INTERVAL = 10; // 몇 분마다 블록이 채굴되는지 조절. (단위: 초)
 const DIFFICULTY_ADJUSMENT_INTERVAL= 10; // 10개의 블록이 생성될 때 마다 난이도 조절(비트코인의 경우 2016)
@@ -55,12 +55,13 @@ const createHash = (index, previousHash, timestamp, data, difficulty, nonce) =>
 
 const createNewBlock = () => {
     const coinbaseTx = createCoinbaseTx(
-        getPublicFromWallet(), 
-        getNewestBlock().index + 1
+      getPublicFromWallet(),
+      getNewestBlock().index + 1
     );
     const blockData = [coinbaseTx];
     return createNewRawBlock(blockData);
-};
+  };
+  
 
 const createNewRawBlock = data => {
    const previousBlock = getNewestBlock();
@@ -243,6 +244,15 @@ const replaceChain = candidateChain => {
 
 const addBlockToChain = candidateBlock => {
     if(isBlockValid(candidateBlock, getNewestBlock())){
+        const processedTxs = processTxs(candidateBlock.data, uTxOuts, candidateBlock.index);
+        if(processedTxs === null){
+            console.log("Couldn't process txs");
+            return false;
+        }else{
+            blockchain.push(candidateBlock);
+            uTxOuts = processedTxs;
+            return true;
+        }
         getBlockchain().push(candidateBlock);
         return true;
     }else{

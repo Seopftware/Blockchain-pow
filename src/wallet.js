@@ -27,7 +27,7 @@ const getPublicFromWallet = () => {
     const privateKey = getPrivateFromWallet();
     const key = ec.keyFromPrivate(privateKey, "hex");
     return key.getPublic().encode("hex"); // public key
-}
+};
 
 // reduce를 사용할 수도 있지만, lodash를 이용해서도 할 수 있다.
 const getBalance = (address, uTxOuts) => { // 주소, 아웃풋의 총합
