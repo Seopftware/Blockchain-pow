@@ -9,7 +9,9 @@ const {
   getBalance,
   getPublicFromWallet,
   createTx,
-  getPrivateFromWallet
+  getPrivateFromWallet,
+  handleIncomingTx,
+  getUTxOutList
 } = Wallet;
 
 const { createCoinbaseTx, processTxs } = Transactions;

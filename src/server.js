@@ -13,9 +13,19 @@ const {
   TxOut
 } = Transactions;
 
+const {
+  getBlockchain,
+  createNewBlock,
+  getAccountBalance,
+  sendTx,
+  getUTxOutList
+} = Blockchain;
+
 const ec = new elliptic.ec("secp256k1");
 
 const privateKeyLocation = path.join(__dirname, "privateKey");
+const { initWallet, getPublicFromWallet, getBalance } = Wallet;
+
 
 const generatePrivateKey = () => {
   const keyPair = ec.genKeyPair();
@@ -100,7 +110,18 @@ const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
       res.send(block);
     }
   });
-  
+
+  app.get("/transactions/:id", (req, res) => {
+    const tx = _(getBlockchain())
+      .map(blocks => blocks.data)
+      .flatten()
+      .find({ id: req.params.id });
+    if (tx === undefined) {
+      res.status(400).send("Transaction not found");
+    }
+    res.send(tx);
+  });
+
   const unsignedTxIns = includedUTxOuts.map(toUnsignedTxIn);
 
   const tx = new Transaction();
