@@ -1,7 +1,6 @@
-const toHexString = bytearray => {
-    return Array.from(bytearray, byte =>{
-        return ("0" + (byte & oxff).toString(16)).slice(-2);
+const toHexString = byteArray => {
+    return Array.from(byteArray, byte => {
+      return ("0" + (byte & 0xff).toString(16)).slice(-2);
     }).join("");
-};
-
-module.exports = { toHexString };
+  };
+  module.exports = { toHexString };
