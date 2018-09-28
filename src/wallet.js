@@ -55,7 +55,7 @@ const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
   const includedUTxOuts = [];
   for (const myUTxOut of myUTxOuts) {
     includedUTxOuts.push(myUTxOut);
-    currentAmount = currentAmount = myUTxOut.amount;
+    currentAmount = currentAmount + myUTxOut.amount;
     if (currentAmount >= amountNeeded) {
       const leftOverAmount = currentAmount - amountNeeded;
       return { includedUTxOuts, leftOverAmount };
