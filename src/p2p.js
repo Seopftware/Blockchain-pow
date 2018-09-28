@@ -44,7 +44,8 @@ const blockchainResponse = data => {
   };
 };
 
-const getMempool = () => {
+// changed function name
+const getAllMempool = () => {
   return {
     type: REQUEST_MEMPOOL,
     data: null
@@ -66,7 +67,7 @@ const startP2PServer = server => {
     initSocketConnection(ws);
   });
   wsServer.on("error", () => {
-    console.log(error);
+    console.log("error");
   });
   console.log("Nomadcoin P2P Server running");
 };
@@ -77,7 +78,12 @@ const initSocketConnection = ws => {
   handleSocketError(ws);
   sendMessage(ws, getLatest());
   setTimeout(() => {
-    sendMessage(ws, getMempool());
+    sendMessageToAll(getAllMempool()); // changed line
+  }, 1000);
+  setInterval(() => {
+    if (sockets.includes(ws)) {
+      sendMessage(ws, "");
+    }
   }, 1000);
 };
 
@@ -121,6 +127,7 @@ const handleSocketMessages = ws => {
         receivedTxs.forEach(tx => {
           try {
             handleIncomingTx(tx);
+            broadcastMempool();
           } catch (e) {
             console.log(e);
           }
@@ -167,6 +174,8 @@ const responseAll = () => blockchainResponse(getBlockchain());
 
 const broadcastNewBlock = () => sendMessageToAll(responseLatest());
 
+const broadcastMempool = () => sendMessageToAll(returnMempool()); // <--- new line
+
 const handleSocketError = ws => {
   const closeSocketConnection = ws => {
     ws.close();
@@ -181,10 +190,13 @@ const connectToPeers = newPeer => {
   ws.on("open", () => {
     initSocketConnection(ws);
   });
+  ws.on("error", () => console.log("Connection failed"));
+  ws.on("close", () => console.log("Connection failed"));
 };
 
 module.exports = {
   startP2PServer,
   connectToPeers,
-  broadcastNewBlock
+  broadcastNewBlock,
+  broadcastMempool // <--- new line
 };
