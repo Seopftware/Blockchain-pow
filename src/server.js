@@ -10,7 +10,7 @@ const { startP2PServer, connectToPeers} = P2P;
 const { initWallet } = Wallet;
 // environment varialbe call PORT if doesn't find it => 3000
 // typing 'export HTTP_PORT=4000' in your console
-const PORT = process.env.HTTP_PORT || 3000;
+const PORT = process.env.HTTP_PORT || 4000;
 
 const app = express();
 app.use(bodyParser.json());
