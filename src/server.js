@@ -91,6 +91,16 @@ const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
     return txIn;
   };
 
+  app.get("/blocks/:hash", (req, res) => {
+    const { params: { hash } } = req;
+    const block = _.find(getBlockchain(), { hash });
+    if (block === undefined) {
+      res.status(400).send("Block not found");
+    } else {
+      res.send(block);
+    }
+  });
+  
   const unsignedTxIns = includedUTxOuts.map(toUnsignedTxIn);
 
   const tx = new Transaction();
