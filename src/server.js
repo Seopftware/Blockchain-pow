@@ -1,49 +1,117 @@
-const express = require("express"),
-  bodyParser = require("body-parser"),
-  morgan = require("morgan"),
-  Blockchain = require("./blockchain"),
-  P2P = require("./p2p"),
-  Wallet = require("./wallet");
+const elliptic = require("elliptic"),
+  path = require("path"),
+  fs = require("fs"),
+  _ = require("lodash"),
+  Transactions = require("./transactions");
 
-const { getBlockchain, createNewBlock, getAccountBalance } = Blockchain;
-const { startP2PServer, connectToPeers} = P2P;
-const { initWallet } = Wallet;
-// environment varialbe call PORT if doesn't find it => 3000
-// typing 'export HTTP_PORT=4000' in your console
-const PORT = process.env.HTTP_PORT || 4000;
+const {
+  getPublicKey,
+  getTxId,
+  signTxIn,
+  TxIn,
+  Transaction,
+  TxOut
+} = Transactions;
 
-const app = express();
-app.use(bodyParser.json());
-app.use(morgan("combined"));
+const ec = new elliptic.ec("secp256k1");
 
+const privateKeyLocation = path.join(__dirname, "privateKey");
 
-app
-  .route("/blocks")
-  .get((req, res) => {
-    res.send(getBlockchain());
-  })
-  .post((req, res) => {
-    const newBlock = createNewBlock();
-    res.send(newBlock);
+const generatePrivateKey = () => {
+  const keyPair = ec.genKeyPair();
+  const privateKey = keyPair.getPrivate();
+  return privateKey.toString(16);
+};
+
+const getPrivateFromWallet = () => {
+  const buffer = fs.readFileSync(privateKeyLocation, "utf8");
+  return buffer.toString();
+};
+
+const getPublicFromWallet = () => {
+  const privateKey = getPrivateFromWallet();
+  const key = ec.keyFromPrivate(privateKey, "hex");
+  return key.getPublic().encode("hex");
+};
+
+const getBalance = (address, uTxOuts) => {
+  return _(uTxOuts)
+    .filter(uTxO => uTxO.address === address)
+    .map(uTxO => uTxO.amount)
+    .sum();
+};
+
+const initWallet = () => {
+  if (fs.existsSync(privateKeyLocation)) {
+    return;
+  }
+  const newPrivateKey = generatePrivateKey();
+
+  fs.writeFileSync(privateKeyLocation, newPrivateKey);
+};
+
+const findAmountInUTxOuts = (amountNeeded, myUTxOuts) => {
+  let currentAmount = 0;
+  const includedUTxOuts = [];
+  for (const myUTxOut of myUTxOuts) {
+    includedUTxOuts.push(myUTxOut);
+    currentAmount = currentAmount = myUTxOut.amount;
+    if (currentAmount >= amountNeeded) {
+      const leftOverAmount = currentAmount - amountNeeded;
+      return { includedUTxOuts, leftOverAmount };
+    }
+  }
+  throw Error("Not enough founds");
+  return false;
+};
+
+const createTxOuts = (receiverAddress, myAddress, amount, leftOverAmount) => {
+  const receiverTxOut = new TxOut(receiverAddress, amount);
+  if (leftOverAmount === 0) {
+    return [receiverTxOut];
+  } else {
+    const leftOverTxOut = new TxOut(myAddress, leftOverAmount);
+    return [receiverTxOut, leftOverAmount];
+  }
+};
+
+const createTx = (receiverAddress, amount, privateKey, uTxOutList) => {
+  const myAddress = getPublicKey(privateKey);
+  const myUTxOuts = uTxOutList.filter(uTxO => uTxO.address === myAddress);
+
+  const { includedUTxOuts, leftOverAmount } = findAmountInUTxOuts(
+    amount,
+    myUTxOuts
+  );
+
+  const toUnsignedTxIn = uTxOut => {
+    const txIn = new TxIn();
+    txIn.txOutId = uTxOut.txOutId;
+    tx.txOutIndex = uTxOut.txOutIndex;
+    return txIn;
+  };
+
+  const unsignedTxIns = includedUTxOuts.map(toUnsignedTxIn);
+
+  const tx = new Transaction();
+  console.log(tx);
+
+  tx.txIns = unsignedTxIns;
+  tx.txOuts = createTxOuts(receiverAddress, myAddress, amount, leftOverAmount);
+
+  tx.id = getTxId(tx);
+
+  tx.txIns = tx.txIns.map((txIn, index) => {
+    txIn.signature = signTxIn(tx, index, privateKey, uTxOutList);
+    return txIn;
   });
+  return tx;
+};
 
-app.post("/peers", (req, res) => {
-  // get peer in body data
-  const { body: { peer } } = req; // url which is running ws server
-  connectToPeers(peer); // connect To peer
-  res.send(); // kill the connection
-});
-
-app.get("/me/balance", (req, res) => {
-  const balance = getAccountBalance();
-  res.send({balance});
-});
-
-// we need to give to the p2p server the express server
-const server = app.listen(PORT, () => 
-console.log(`TripCoin Server running on ${PORT} ✅`));
-
-initWallet();
-startP2PServer(server);
-
-
+module.exports = {
+  initWallet,
+  getBalance,
+  getPublicFromWallet,
+  createTx,
+  getPrivateFromWallet
+};
